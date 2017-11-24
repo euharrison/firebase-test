@@ -34,7 +34,7 @@
     <div>
       <h2>Messages</h2>
       <form id="form-message">
-        <textarea placeholder="Write a message..."></textarea><br>
+        <textarea name="text" placeholder="Write a message..."></textarea><br>
         <button>Send</button>
       </form>
       <ul id="messages"></ul>
@@ -64,7 +64,7 @@
 
       var db = firebase.firestore();
 
-      var globalUser = {};
+      var loggedUser;
 
       $('#form-register').on('submit', function(e) {
         e.preventDefault();
@@ -75,9 +75,10 @@
           .createUserWithEmailAndPassword(email, password)
           .then(function(user) {
             console.log(user);
-            db.collection('users').add({
-              displayName: user.displayName,
+            db.collection('users').doc(user.uid).set({
+              uid: user.uid,
               email: user.email,
+              displayName: user.displayName,
               photoURL: user.photoURL,
             })
             .then(console.log)
@@ -116,20 +117,29 @@
 
       $('#form-message').on('submit', function(e) {
         e.preventDefault();
-        var text = $(this).find('textarea').val();
-        db.collection('messages').add({
-          text: text,
-          email: globalUser.email,
-        })
-        .then(console.log)
-        .catch(console.error);
+        if (!loggedUser || !loggedUser.uid) {
+          return;
+        }
+        var text = $(this).find('[name="text"]').val();
+        db.collection('messages')
+          .add({
+            text: text,
+            user: loggedUser.uid,
+          })
+          .then(console.log)
+          .catch(console.error);
       });
 
       firebase.auth().onAuthStateChanged(function(user) {
         if (user) {
-          console.log(user);
-          globalUser = user;
-          $('#user-email').text(`Hello, ${user.email}!`);
+          db.collection('users').doc(user.uid).get()
+            .then(function(doc) {
+              if (doc.exists) {
+                loggedUser = doc.data();
+                $('#user-email').text(`Hello, ${loggedUser.displayName || loggedUser.email}!`);
+              }
+            })
+            .catch(console.error);
         } else {
           $('#user-email').text('Hello!');
         }
@@ -137,13 +147,13 @@
 
       db.collection('messages').get().then((querySnapshot) => {
         querySnapshot.forEach((doc) => {
-          addMessage(doc.data())
-          console.log(doc.data());
+          // TODO get user displayName
+          renderMessage(doc.data())
         });
       });
 
-      function addMessage(message) {
-        $('#messages').append(`<li>${message.text}</li>`);
+      function renderMessage(message) {
+        $('#messages').append(`<li>${message.user}: ${message.text}</li>`);
       }
 
     </script>
