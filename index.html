@@ -33,6 +33,10 @@
 
     <div>
       <h2>Messages</h2>
+      <form id="form-message">
+        <textarea placeholder="Write a message..."></textarea><br>
+        <button>Send</button>
+      </form>
       <ul id="messages"></ul>
     </div>
 
@@ -60,6 +64,8 @@
 
       var db = firebase.firestore();
 
+      var globalUser = {};
+
       $('#form-register').on('submit', function(e) {
         e.preventDefault();
         var email = $(this).find('[name="email"]').val();
@@ -69,7 +75,7 @@
           .createUserWithEmailAndPassword(email, password)
           .then(function(user) {
             console.log(user);
-            db.collection("users").add({
+            db.collection('users').add({
               displayName: user.displayName,
               email: user.email,
               photoURL: user.photoURL,
@@ -108,14 +114,37 @@
           .catch(console.error);
       });
 
+      $('#form-message').on('submit', function(e) {
+        e.preventDefault();
+        var text = $(this).find('textarea').val();
+        db.collection('messages').add({
+          text: text,
+          email: globalUser.email,
+        })
+        .then(console.log)
+        .catch(console.error);
+      });
+
       firebase.auth().onAuthStateChanged(function(user) {
         if (user) {
           console.log(user);
+          globalUser = user;
           $('#user-email').text(`Hello, ${user.email}!`);
         } else {
           $('#user-email').text('Hello!');
         }
       });
+
+      db.collection('messages').get().then((querySnapshot) => {
+        querySnapshot.forEach((doc) => {
+          addMessage(doc.data())
+          console.log(doc.data());
+        });
+      });
+
+      function addMessage(message) {
+        $('#messages').append(`<li>${message.text}</li>`);
+      }
 
     </script>
   </body>
