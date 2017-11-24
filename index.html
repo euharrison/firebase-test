@@ -1,0 +1,52 @@
+<html>
+  <head>
+    <title>Firebase Test</title>
+  </head>
+  <body>
+
+
+    <form id="form-register">
+      <label>Email: <input name="email" type="email"></label>
+      <label>Password: <input name="password" type="password"></label>
+      <button>Registrar</button>
+    </form>
+
+
+    <script
+      src="https://code.jquery.com/jquery-3.2.1.min.js"
+      integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+      crossorigin="anonymous"></script>
+    <script src="https://www.gstatic.com/firebasejs/4.6.2/firebase.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/4.6.2/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/4.6.2/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/4.6.2/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/4.6.2/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/4.6.2/firebase-messaging.js"></script>
+
+    <script>
+      var config = {
+        apiKey: "AIzaSyCACCQJ5uAw2GCwbX7jPOGtCZYU9a_wmjA",
+        authDomain: "fir-test1-ac37f.firebaseapp.com",
+        databaseURL: "https://fir-test1-ac37f.firebaseio.com",
+        projectId: "fir-test1-ac37f",
+        storageBucket: "",
+        messagingSenderId: "819546458475"
+      };
+      firebase.initializeApp(config);
+
+      var formRegister = $('#form-register');
+      formRegister.on('submit', function(e) {
+        e.preventDefault();
+        var email = formRegister.find('[name="email"]').val();
+        var password = formRegister.find('[name="password"]').val();
+        firebase.auth().createUserWithEmailAndPassword(email, password)
+          .then(function(response) {
+            console.log(response)
+          })
+          .catch(function(error) {
+            console.error(error)
+          });
+      })
+    </script>
+  </body>
+</html>
