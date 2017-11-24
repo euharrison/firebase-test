@@ -20,9 +20,15 @@
     </form>
 
     <div>
+      <button id="button-google-login">Google Login</button>
+    </div>
+    <br>
+
+    <div>
       <button id="button-logout">Logout</button>
     </div>
-    
+    <br>
+
 
 
     <script
@@ -47,11 +53,10 @@
       };
       firebase.initializeApp(config);
 
-      var formRegister = $('#form-register');
-      formRegister.on('submit', function(e) {
+      $('#form-register').on('submit', function(e) {
         e.preventDefault();
-        var email = formRegister.find('[name="email"]').val();
-        var password = formRegister.find('[name="password"]').val();
+        var email = $(this).find('[name="email"]').val();
+        var password = $(this).find('[name="password"]').val();
         firebase
           .auth()
           .createUserWithEmailAndPassword(email, password)
@@ -59,11 +64,10 @@
           .catch(console.error);
       });
 
-      var formLogin = $('#form-login');
-      formLogin.on('submit', function(e) {
+      $('#form-login').on('submit', function(e) {
         e.preventDefault();
-        var email = formLogin.find('[name="email"]').val();
-        var password = formLogin.find('[name="password"]').val();
+        var email = $(this).find('[name="email"]').val();
+        var password = $(this).find('[name="password"]').val();
         firebase
           .auth()
           .signInWithEmailAndPassword(email, password)
@@ -71,8 +75,16 @@
           .catch(console.error);
       });
 
-      var buttonLogout = $('#button-logout');
-      buttonLogout.on('click', function(e) {
+      $('#button-google-login').on('click', function(e) {
+        var provider = new firebase.auth.GoogleAuthProvider();
+        firebase
+          .auth()
+          .signInWithPopup(provider)
+          .then(console.log)
+          .catch(console.error);
+      });
+
+      $('#button-logout').on('click', function(e) {
         firebase
           .auth()
           .signOut()
