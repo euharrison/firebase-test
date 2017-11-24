@@ -65,6 +65,7 @@
       var db = firebase.firestore();
 
       var loggedUser;
+      var allMessages = [];
 
       $('#form-register').on('submit', function(e) {
         e.preventDefault();
@@ -125,6 +126,7 @@
           .add({
             text: text,
             user: loggedUser.uid,
+            date: new Date(),
           })
           .then(console.log)
           .catch(console.error);
@@ -147,13 +149,38 @@
 
       db.collection('messages').get().then((querySnapshot) => {
         querySnapshot.forEach((doc) => {
-          // TODO get user displayName
-          renderMessage(doc.data())
+          const message = doc.data();
+          if (!message.user) {
+            return;
+          }
+          // messages
+          // TODO how to optimize this? Like laravel `with` feature
+          db.collection('users').doc(message.user).get()
+            .then(function(doc) {
+              if (doc.exists) {
+                message.user = doc.data();
+                allMessages.push(message);
+                renderMessages();
+              }
+            })
+            .catch(console.error);
         });
       });
 
-      function renderMessage(message) {
-        $('#messages').append(`<li>${message.user}: ${message.text}</li>`);
+      function renderMessages() {
+        var html = '';
+        allMessages.sort(function(a, b) {
+          return new Date(b.date || 0) - new Date(a.date || 0);
+        }).forEach(function(message) {
+          html += `
+            <li>
+              ${message.date}<br>
+              ${message.user.displayName || message.user.email}:<br>
+              <strong>${message.text}</strong>
+            </li>
+          `;
+        })
+        $('#messages').html(html);
       }
 
     </script>
